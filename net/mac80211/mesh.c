@@ -736,8 +736,7 @@ ieee80211_mesh_build_beacon(struct ieee80211_if_mesh *ifmsh)
 	rcu_read_lock();
 	csa = rcu_dereference(ifmsh->csa);
 	if (csa) {
-		pos = skb_put(skb, 13);
-		memset(pos, 0, 13);
+		pos = skb_put_zero(skb, 13);
 		*pos++ = WLAN_EID_CHANNEL_SWITCH;
 		*pos++ = 3;
 		*pos++ = 0x0;
