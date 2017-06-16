@@ -1053,7 +1053,7 @@ static struct sk_buff *ncm_wrap_ntb(struct gether *port,
 			crc = ~crc32_le(~0,
 					skb->data,
 					skb->len);
-			crc_pos = (void *) skb_put(skb, sizeof(uint32_t));
+			crc_pos = skb_put(skb, sizeof(uint32_t));
 			put_unaligned_le32(crc, crc_pos);
 		}
 
@@ -1100,7 +1100,7 @@ static struct sk_buff *ncm_wrap_ntb(struct gether *port,
 						    GFP_ATOMIC);
 			if (!ncm->skb_tx_ndp)
 				goto err;
-			ntb_ndp = (void *) skb_put(ncm->skb_tx_ndp,
+			ntb_ndp = skb_put(ncm->skb_tx_ndp,
 						    opts->ndp_size);
 			memset(ntb_ndp, 0, ncb_len);
 			/* dwSignature */

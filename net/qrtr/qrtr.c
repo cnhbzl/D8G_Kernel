@@ -246,7 +246,7 @@ static struct sk_buff *qrtr_alloc_resume_tx(u32 src_node,
 		return NULL;
 	skb_reset_transport_header(skb);
 
-	hdr = (struct qrtr_hdr *)skb_put(skb, QRTR_HDR_SIZE);
+	hdr = skb_put(skb, QRTR_HDR_SIZE);
 	hdr->version = cpu_to_le32(QRTR_PROTO_VER);
 	hdr->type = cpu_to_le32(QRTR_TYPE_RESUME_TX);
 	hdr->src_node_id = cpu_to_le32(src_node);
