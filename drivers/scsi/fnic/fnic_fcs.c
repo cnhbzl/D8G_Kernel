@@ -997,8 +997,7 @@ void fnic_eth_send(struct fcoe_ctlr *fip, struct sk_buff *skb)
 
 	if (!fnic->vlan_hw_insert) {
 		eth_hdr = (struct ethhdr *)skb_mac_header(skb);
-		vlan_hdr = (struct vlan_ethhdr *)skb_push(skb,
-				sizeof(*vlan_hdr) - sizeof(*eth_hdr));
+		vlan_hdr = skb_push(skb, sizeof(*vlan_hdr) - sizeof(*eth_hdr));
 		memcpy(vlan_hdr, eth_hdr, 2 * ETH_ALEN);
 		vlan_hdr->h_vlan_proto = htons(ETH_P_8021Q);
 		vlan_hdr->h_vlan_encapsulated_proto = eth_hdr->h_proto;
@@ -1064,7 +1063,7 @@ static int fnic_send_frame(struct fnic *fnic, struct fc_frame *fp)
 
 	if (!fnic->vlan_hw_insert) {
 		eth_hdr_len = sizeof(*vlan_hdr) + sizeof(*fcoe_hdr);
-		vlan_hdr = (struct vlan_ethhdr *)skb_push(skb, eth_hdr_len);
+		vlan_hdr = skb_push(skb, eth_hdr_len);
 		eth_hdr = (struct ethhdr *)vlan_hdr;
 		vlan_hdr->h_vlan_proto = htons(ETH_P_8021Q);
 		vlan_hdr->h_vlan_encapsulated_proto = htons(ETH_P_FCOE);
@@ -1072,7 +1071,7 @@ static int fnic_send_frame(struct fnic *fnic, struct fc_frame *fp)
 		fcoe_hdr = (struct fcoe_hdr *)(vlan_hdr + 1);
 	} else {
 		eth_hdr_len = sizeof(*eth_hdr) + sizeof(*fcoe_hdr);
-		eth_hdr = (struct ethhdr *)skb_push(skb, eth_hdr_len);
+		eth_hdr = skb_push(skb, eth_hdr_len);
 		eth_hdr->h_proto = htons(ETH_P_FCOE);
 		fcoe_hdr = (struct fcoe_hdr *)(eth_hdr + 1);
 	}

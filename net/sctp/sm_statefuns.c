@@ -646,8 +646,7 @@ static bool sctp_auth_chunk_verify(struct net *net, struct sctp_chunk *chunk,
 	auth.skb = chunk->auth_chunk;
 	auth.asoc = chunk->asoc;
 	auth.sctp_hdr = chunk->sctp_hdr;
-	auth.chunk_hdr = (struct sctp_chunkhdr *)
-				skb_push(chunk->auth_chunk,
+	auth.chunk_hdr = skb_push(chunk->auth_chunk,
 					 sizeof(struct sctp_chunkhdr));
 	skb_pull(chunk->auth_chunk, sizeof(struct sctp_chunkhdr));
 	auth.transport = chunk->transport;

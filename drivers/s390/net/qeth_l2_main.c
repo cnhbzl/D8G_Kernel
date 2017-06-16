@@ -901,8 +901,7 @@ static int qeth_l2_hard_start_xmit(struct sk_buff *skb, struct net_device *dev)
 						sizeof(struct qeth_hdr));
 			if (!new_skb)
 				goto tx_drop;
-			hdr = (struct qeth_hdr *)skb_push(new_skb,
-						sizeof(struct qeth_hdr));
+			hdr = skb_push(new_skb, sizeof(struct qeth_hdr));
 			skb_set_mac_header(new_skb, sizeof(struct qeth_hdr));
 			qeth_l2_fill_header(card, hdr, new_skb, cast_type);
 			if (new_skb->ip_summed == CHECKSUM_PARTIAL)
