@@ -204,7 +204,7 @@ static void x25_asy_bump(struct x25_asy *sl)
 		dev->stats.rx_dropped++;
 		return;
 	}
-	memcpy(skb_put(skb, count), sl->rbuff, count);
+	skb_put_data(skb, sl->rbuff, count);
 	skb->protocol = x25_type_trans(skb, sl->dev);
 	err = lapb_data_received(skb->dev, skb);
 	if (err != LAPB_OK) {
