@@ -491,7 +491,7 @@ static struct sk_buff
 	if (!skb)
 		return ERR_PTR(-ENOMEM);
 	skb_reserve(skb, sizeof(struct sge_opaque_hdr));
-	wreq = __skb_put(skb, transhdr_len);
+	wreq = __skb_put_zero(skb, transhdr_len);
 
 	sec_cpl = (struct cpl_tx_sec_pdu *)((u8 *)wreq + SEC_CPL_OFFSET);
 	sec_cpl->op_ivinsrtofst =
@@ -785,8 +785,7 @@ static struct sk_buff *create_final_hash_wr(struct ahash_request *req,
 		return skb;
 
 	skb_reserve(skb, sizeof(struct sge_opaque_hdr));
-	wreq = __skb_put(skb, transhdr_len);
-	memset(wreq, 0, transhdr_len);
+	wreq = __skb_put_zero(skb, transhdr_len);
 
 	sec_cpl = (struct cpl_tx_sec_pdu *)((u8 *)wreq + SEC_CPL_OFFSET);
 	sec_cpl->op_ivinsrtofst =
