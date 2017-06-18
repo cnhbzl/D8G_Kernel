@@ -798,8 +798,7 @@ static void ieee80211_send_assoc(struct ieee80211_sub_if_data *sdata)
 						 after_ric,
 						 ARRAY_SIZE(after_ric),
 						 offset);
-		pos = skb_put_data(skb, assoc_data->ie + offset,
-				   noffset - offset);
+		skb_put_data(skb, assoc_data->ie + offset, noffset - offset);
 		offset = noffset;
 	}
 
@@ -836,8 +835,7 @@ static void ieee80211_send_assoc(struct ieee80211_sub_if_data *sdata)
 		noffset = ieee80211_ie_split(assoc_data->ie, assoc_data->ie_len,
 					     before_vht, ARRAY_SIZE(before_vht),
 					     offset);
-		pos = skb_put_data(skb, assoc_data->ie + offset,
-				   noffset - offset);
+		skb_put_data(skb, assoc_data->ie + offset, noffset - offset);
 		offset = noffset;
 	}
 
@@ -850,8 +848,7 @@ static void ieee80211_send_assoc(struct ieee80211_sub_if_data *sdata)
 		noffset = ieee80211_ie_split_vendor(assoc_data->ie,
 						    assoc_data->ie_len,
 						    offset);
-		pos = skb_put_data(skb, assoc_data->ie + offset,
-				   noffset - offset);
+		skb_put_data(skb, assoc_data->ie + offset, noffset - offset);
 		offset = noffset;
 	}
 
@@ -870,8 +867,7 @@ static void ieee80211_send_assoc(struct ieee80211_sub_if_data *sdata)
 	/* add any remaining custom (i.e. vendor specific here) IEs */
 	if (assoc_data->ie_len) {
 		noffset = assoc_data->ie_len;
-		pos = skb_put_data(skb, assoc_data->ie + offset,
-				   noffset - offset);
+		skb_put_data(skb, assoc_data->ie + offset, noffset - offset);
 	}
 
 	drv_mgd_prepare_tx(local, sdata);
