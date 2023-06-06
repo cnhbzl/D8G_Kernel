@@ -1,14 +1,6 @@
-/* Copyright (c) 2010-2017, 2019 The Linux Foundation. All rights reserved.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 and
- * only version 2 as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Copyright (c) 2010-2020, The Linux Foundation. All rights reserved.
  */
 #include <linux/errno.h>
 #include <linux/module.h>
@@ -22,6 +14,7 @@
 #include <linux/msm_adreno_devfreq.h>
 #include <asm/cacheflush.h>
 #include <soc/qcom/scm.h>
+#include <misc/d8g_helper.h>
 #include "governor.h"
 
 static DEFINE_SPINLOCK(tz_lock);
@@ -379,8 +372,8 @@ static inline int devfreq_get_freq_level(struct devfreq *devfreq,
 	int lev;
 
 	for (lev = 0; lev < devfreq->profile->max_state; lev++)
-	if (freq == devfreq->profile->freq_table[lev])
-		return lev;
+		if (freq == devfreq->profile->freq_table[lev])
+			return lev;
 
 	return -EINVAL;
 }
@@ -406,7 +399,10 @@ static int tz_get_target_freq(struct devfreq *devfreq, unsigned long *freq)
 #if 1
 	// scale busy time up based on adrenoboost parameter, only if MIN_BUSY exceeded...
 	if ((unsigned int)(priv->bin.busy_time + stats.busy_time) >= MIN_BUSY) {
-		priv->bin.busy_time += stats.busy_time * (1 + (adrenoboost*3)/2);
+		if (limited)
+			priv->bin.busy_time += stats.busy_time;
+		else
+			priv->bin.busy_time += stats.busy_time * (1 + (adrenoboost*3)/2);
 	} else {
 		priv->bin.busy_time += stats.busy_time;
 	}
@@ -436,6 +432,10 @@ static int tz_get_target_freq(struct devfreq *devfreq, unsigned long *freq)
 		pr_err(TAG "bad freq %ld\n", stats.current_frequency);
 		return level;
 	}
+	// idle freq or any non governor drop should move last_level as well, so adrenoboost works on proper leveling
+	if (level != priv->bin.last_level) {
+		priv->bin.last_level = level;
+	}
 
 	/*
 	 * If there is an extended block of busy processing,
@@ -453,9 +453,6 @@ static int tz_get_target_freq(struct devfreq *devfreq, unsigned long *freq)
 		__secure_tz_update_entry3(scm_data, sizeof(scm_data),
 					&val, sizeof(val), priv);
 	}
-	priv->bin.total_time = 0;
-	priv->bin.busy_time = 0;
-
 	/*
 	 * If the decision is to move to a different level, make sure the GPU
 	 * frequency changes.
@@ -465,6 +462,8 @@ static int tz_get_target_freq(struct devfreq *devfreq, unsigned long *freq)
 		level = max(level, 0);
 		level = min_t(int, level, devfreq->profile->max_state - 1);
 	}
+	priv->bin.total_time = 0;
+	priv->bin.busy_time = 0;
 
 	*freq = devfreq->profile->freq_table[level];
 	return 0;
@@ -476,11 +475,11 @@ static int tz_start(struct devfreq *devfreq)
 	unsigned int tz_pwrlevels[MSM_ADRENO_MAX_PWRLEVELS + 1];
 	int i, out, ret;
 	unsigned int version;
+	struct msm_adreno_extended_profile *gpu_profile;
 
-	struct msm_adreno_extended_profile *gpu_profile = container_of(
-					(devfreq->profile),
-					struct msm_adreno_extended_profile,
-					profile);
+	gpu_profile = container_of(devfreq->profile,
+			struct msm_adreno_extended_profile,
+			profile);
 
 	/*
 	 * Assuming that we have only one instance of the adreno device
@@ -511,6 +510,10 @@ static int tz_start(struct devfreq *devfreq)
 
 	for (i = 0; adreno_tz_attr_list[i] != NULL; i++)
 		device_create_file(&devfreq->dev, adreno_tz_attr_list[i]);
+			  
+#if 1
+	priv->bin.last_level = devfreq->profile->max_state - 1;
+#endif
 
 	return 0;
 }
@@ -582,7 +585,6 @@ static int tz_handler(struct devfreq *devfreq, unsigned int event, void *data)
 	return result;
 }
 
-
 static struct devfreq_governor msm_adreno_tz = {
 	.name = "msm-adreno-tz",
 	.get_target_freq = tz_get_target_freq,
@@ -601,7 +603,6 @@ static void __exit msm_adreno_tz_exit(void)
 
 	if (ret)
 		pr_err(TAG "failed to remove governor %d\n", ret);
-
 }
 
 module_exit(msm_adreno_tz_exit);
