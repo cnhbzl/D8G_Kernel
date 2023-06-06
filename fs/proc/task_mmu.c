@@ -231,7 +231,7 @@ static void *m_start(struct seq_file *m, loff_t *ppos)
 	sched_migrate_to_cpumask_start(to_cpumask(&priv->old_cpus_allowed),
 				       cpu_perf_mask);
 
-	if (oprofile !=4 || oprofile !=0) {
+	if (oprofile !=4 && oprofile !=0) {
 		cpu_input_boost_kick_max(100);
 		devfreq_boost_kick_max(DEVFREQ_MSM_CPUBW, 100);
 		devfreq_boost_kick_max(DEVFREQ_MSM_LLCCBW, 100);
