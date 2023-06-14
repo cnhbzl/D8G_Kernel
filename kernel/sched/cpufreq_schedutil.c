@@ -337,7 +337,7 @@ static void sugov_walt_adjust(struct sugov_cpu *sg_cpu, unsigned long *util,
 	if (sg_policy->tunables->pl) {
 		if (conservative_pl())
 			pl = mult_frac(pl, TARGET_LOAD, 100);
-		*util = max(*util, pl);
+		*util = (*util + pl) / 2;
 	}
 }
 
